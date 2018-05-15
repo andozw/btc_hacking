@@ -1,0 +1,16 @@
+#! /bin/bash
+
+
+echo -e "id, created_at_ms, updated_at_ms, updated_diff_sec, txn_id, block_time_ms, block_time_diff_s, version"
+
+tail -n +2 <&0 | while read id created_at_ms updated_at_ms txn_id;
+do
+  updated_diff_sec=$(( (updated_at_ms - created_at_ms) / 1000))
+
+  txn_json=$(curl -s https://blockchain.info/rawtx/$txn_id)
+  block_time_ms=$(echo $txn_json | jq '.time')
+  block_time_diff_s=$(( block_time_ms - (created_at_ms / 1000) )) 
+  version=$(echo $txn_json | jq '.ver')
+  echo "$id, $created_at_ms, $updated_at_ms, $updated_diff_sec, $txn_id, $block_time_ms, $block_time_diff_s, $version" 
+done 
+
